@@ -241,6 +241,34 @@ ISR(USART_RX_vect) {
 }
 
 /*
+ * Timer
+ */
+static uint16_t volatile g_timer_ticks = 0;
+static bool     volatile g_timer_done  = false;
+static uint16_t g_timer_target = 0;
+
+void timer_init(uint16_t ms) {
+    BIT_HI(TCCR0B, CS00);  /* no prescale factor */
+    BIT_HI(TIMSK0, TOIE0); /* enable interrupt on overflow */
+    sei();                 /* enable global interrupts */
+    g_timer_target = (F_CPU * ms) / (256L * 1000L);
+}
+
+bool timer_done(void) {
+    bool temp = g_timer_done;
+    g_timer_done = false;
+    return temp;
+}
+
+ISR(TIMER0_OVF_vect) {
+    if (g_timer_ticks == g_timer_target) {
+        g_timer_ticks = 0;
+        g_timer_done  = true;
+    }
+    ++g_timer_ticks;
+}
+
+/*
  * Miscellaneous
  */
 int readline(char *begin, char *end) {
