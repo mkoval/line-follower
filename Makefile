@@ -12,7 +12,7 @@ AD_PARTNO   = m328p
 
 ALL_CFLAGS  = -mmcu=$(MCU) -DF_CPU=$(F_CPU) -DDEBUG -pedantic -Wall -Werror -Os $(CFLAGS)
 ALL_LDFLAGS = -mmcu=$(MCU) $(LDFLAGS)
-ALL_ADFLAGS = -Cavrdude.conf -cstk500v1 -p$(AD_PARTNO) -b$(AD_BAUDRT) -P$(AD_DEVICE) -D $(ADFLAGS)
+ALL_ADFLAGS = -cstk500v1 -p$(AD_PARTNO) -b$(AD_BAUDRT) -P$(AD_DEVICE) -D $(ADFLAGS)
 
 TARGET      = libarduino2
 SOURCE      = libarduino2.c main.c
