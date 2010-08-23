@@ -15,7 +15,7 @@ ALL_LDFLAGS = -mmcu=$(MCU) $(LDFLAGS)
 ALL_ADFLAGS = -c$(AD_CONFIG) -p$(AD_PARTNO) -b$(AD_BAUDRT) -P$(AD_DEVICE) -D $(ADFLAGS)
 
 TARGET      = line-learn
-SOURCE      = libarduino2.c main.c sensor.c
+SOURCE      = libarduino2.c main.c motor.c sensor.c
 OBJECTS     = $(SOURCE:=.o)
 
 .PHONY: all clean rebuild install
