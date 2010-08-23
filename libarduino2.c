@@ -5,7 +5,6 @@
 #include <util/delay.h>
 #include "libarduino2.h"
 
-
 #define BIT_SET(_out_, _bit_, _val_) ((_out_) = ((_out_) & ~(1 << (_bit_))) | ((_val_) << (_bit_)))
 #define BIT_GET(_out_, _bit_) (((_out_) >> (_bit_)) & 1)
 #define BIT_HI(_out_, _bit_) ((_out_) |= (1 << (_bit_)))
@@ -58,7 +57,7 @@ void digital_set(pin_t pin, bool value) {
 #define ADC_SET(_pin_)    (ADMUX = (ADMUX & ~7) | ((_pin_) & 7))
 
 static uint16_t volatile g_adc_val[6];
-static bool     volatile g_adc_done = false;
+static bool volatile     g_adc_done = false;
 
 void analog_init(void) {
     int i;
@@ -69,38 +68,34 @@ void analog_init(void) {
     }
 
     BIT_LO(PRR,    PRADC); /* disable power reduction */
-    BIT_HI(ADCSRA, ADATE); /* auto-trigger on interrupt */
+    BIT_HI(ADMUX,  REFS0); /* use AVCC as the reference voltage */
+    BIT_HI(ADCSRA, ADATE); /* start conversion on interrupt */
     BIT_HI(ADCSRA, ADIE);  /* interrupt on completion */
     BIT_HI(ADCSRA, ADEN);  /* enable */
-    BIT_HI(ADMUX,  REFS0); /* use AVCC as the reference voltage */
-    ADCSRA |= ADC_PRESCALE_BITS; /* clock divisor, three bits */
+    ADCSRA |= ADC_PRESCALE_BITS; /* clock divisor */
+    sei();
 
-    /* Start the conversion on ADC0; triggers an interrupt when complete. */
-    ADC_SET(0);
-    BIT_HI(ADCSRA, ADSC); /* begin conversion */
+    BIT_HI(ADCSRA, ADSC);        /* begin conversion */
+    _delay_loop_2(ADC_PRESCALE); /* wait for ADMUX to be read */
+    ADC_SET(ADC_NEXT);           /* prepare for the next conversion */
+}
 
-    _delay_loop_2(ADC_PRESCALE);
-    ADC_SET(ADC_NEXT);
+bool analog_available(void) {
+    bool buf   = g_adc_done;
+    g_adc_done = false;
+    return buf;
 }
 
 uint16_t analog_get(pin_t pin) {
     uint16_t value;
     if (pin < ADC_NUM) {
         /* Reading 16-bit value from g_adc_cur must be atomic. */
-        sei();
         value = g_adc_val[pin];
-        cli();
         return value;
     } else {
         ERROR("analog_get", "invalid pin index");
         return 0;
     }
-}
-
-bool analog_available(void) {
-    bool temp  = g_adc_done;
-    g_adc_done = false;
-    return temp;
 }
 
 ISR(ADC_vect) {
@@ -181,7 +176,7 @@ void pwm_set(pin_t pin, uint8_t value) {
  * Serial Communication (UART)
  */
 #define UART_BAUD (F_CPU / (SERIAL_BAUD * 16L) - 1)
-#define UART_SIZE 16
+#define UART_SIZE 32
 
 static uint8_t volatile g_uart_buf[UART_SIZE];
 static uint8_t volatile g_uart_read  = 0;
