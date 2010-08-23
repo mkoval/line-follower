@@ -25,9 +25,9 @@ void digital_init(pin_t pin, pinmode_t mode) {
 
 bool digital_get(pin_t pin) {
     if (pin < 8) {
-        return BIT_GET(PIND, pin);
+        return BIT_GET(PORTD, pin);
     } else if (pin < 16) {
-        return BIT_GET(PINB, pin - 8);
+        return BIT_GET(PORTB, pin - 8);
     } else {
         ERROR("digital_get", "invalid pin index");
         return 0;
@@ -36,9 +36,9 @@ bool digital_get(pin_t pin) {
 
 void digital_set(pin_t pin, bool value) {
     if (pin < 8) {
-        BIT_SET(PIND, pin, value);
+        BIT_SET(PORTD, pin, value);
     } else if (pin < 16) {
-        BIT_SET(PINB, pin, value);
+        BIT_SET(PORTB, pin - 8, value);
     } else {
         ERROR("digital_set", "invalid pin index");
     }
@@ -111,7 +111,7 @@ void pwm_init(pin_t pin) {
     if (pin == 1 || pin == 2) {
         BIT_HI(TCCR1A, WGM10); /* 8-bit */
         BIT_HI(TCCR1B, CS12);  /* divide by 256 */
-        TCNT1 = 0;             /* initial value */
+        TCNT1 = 0;
     } else if (pin == 3 || pin == 4) {
         BIT_HI(TCCR2A, WGM20);
         BIT_HI(TCCR2B, CS21);
