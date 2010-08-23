@@ -14,8 +14,8 @@ ALL_CFLAGS  = -mmcu=$(MCU) -DF_CPU=$(F_CPU) -DDEBUG -pedantic -Wall -Werror -Os 
 ALL_LDFLAGS = -mmcu=$(MCU) $(LDFLAGS)
 ALL_ADFLAGS = -c$(AD_CONFIG) -p$(AD_PARTNO) -b$(AD_BAUDRT) -P$(AD_DEVICE) -D $(ADFLAGS)
 
-TARGET      = libarduino2
-SOURCE      = libarduino2.c main.c
+TARGET      = line-learn
+SOURCE      = libarduino2.c main.c sensor.c
 OBJECTS     = $(SOURCE:=.o)
 
 .PHONY: all clean rebuild install
