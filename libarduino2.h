@@ -4,9 +4,10 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <avr/pgmspace.h>
 
 #if defined(DEBUG)
-#define ERROR(_func_, _msg_) printf("err: %s: %s\n", (_func_), (_msg_))
+#define ERROR(_func_, _msg_) printf_P(PSTR("err: " _func_ ": " _msg_ "\n") )
 #else
 #define ERROR(_func_, _msg_)
 #endif

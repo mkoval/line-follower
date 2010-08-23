@@ -29,16 +29,16 @@ int main(void) {
         switch (mode) {
         case MODE_MENU:
             /* Prompt the user for a command. */
-            printf(" >>> ");
+            printf_P(PSTR(" >>> "));
             readline(cmd, cmd + sizeof(cmd));
 
             /* Calibrate the line following sensors. */
             if (!strcmp(cmd, "line")) {
                 sensor_line();
-                printf("Line calibration complete.\n");
+                printf_P(PSTR("Line calibration complete.\n"));
             } else if (!strcmp(cmd, "floor")) {
                 sensor_floor();
-                printf("Floor calibration complete.\n");
+                printf_P(PSTR("Floor calibration complete.\n"));
             }
             /* Follow the line with a machine learning algorithm. */
             else if (!strcmp(cmd, "follow")) {
@@ -48,7 +48,7 @@ int main(void) {
             }
             /* Unrecognized command. */
             else {
-                printf("Unrecognized command.\n");
+                printf_P(PSTR("Unrecognized command.\n"));
             }
             break;
 
