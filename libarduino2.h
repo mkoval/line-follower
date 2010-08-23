@@ -43,4 +43,6 @@ int serial_getc(void);
 int serial_getchar(FILE *);
 int serial_putchar(char, FILE *);
 
+int readline(char *, char *);
+
 #endif

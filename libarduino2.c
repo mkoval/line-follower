@@ -239,3 +239,30 @@ ISR(USART_RX_vect) {
     g_uart_buf[g_uart_write] = UDR0;
     g_uart_write = (g_uart_write + 1) % UART_SIZE;
 }
+
+/*
+ * Miscellaneous
+ */
+int readline(char *begin, char *end) {
+    char *cursor = begin;
+
+    for (;;) {
+        char ch = getchar();
+
+        /* Printable characters. */
+        if (32 <= ch && ch <= 126 && cursor != end) {
+            *cursor = ch;
+            ++cursor;
+        }
+        /* Backspace deletes the previous character in the buffer. */
+        else if (ch == 127 && cursor != begin) {
+            /* TODO: Figure out how to support this in miniterm. */
+        }
+        /* We're done when we receive a newline. */
+        else if (ch == '\n') {
+            *cursor = '\0';
+            break;
+        }
+    }
+    return cursor - begin;
+}
