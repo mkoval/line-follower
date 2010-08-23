@@ -22,14 +22,14 @@ void sensor_init(void) {
 void sensor_floor(void) {
     uint8_t i;
     for (i = 0; i < SENSOR_NUM; ++i) {
-        g_line[i] = analog_get(i);
+        g_floor[i] = analog_get(i);
     }
 }
 
 void sensor_line(void) {
     uint8_t i;
     for(i = 0; i < SENSOR_NUM; ++i) {
-        g_floor[i] = analog_get(i);
+        g_line[i] = analog_get(i);
     }
 }
 
