@@ -6,13 +6,13 @@ AD          = avrdude
 F_CPU       = 16000000
 MCU         = atmega328p
 AD_BAUDRT   = 57600
-AD_CONFIG   = arduino
+AD_CONFIG   = stk500v1
 AD_DEVICE   = /dev/tty.usbserial-A6007AnN
 AD_PARTNO   = m328p
 
 ALL_CFLAGS  = -mmcu=$(MCU) -DF_CPU=$(F_CPU) -DDEBUG -pedantic -Wall -Werror -Os $(CFLAGS)
 ALL_LDFLAGS = -mmcu=$(MCU) $(LDFLAGS)
-ALL_ADFLAGS = -cstk500v1 -p$(AD_PARTNO) -b$(AD_BAUDRT) -P$(AD_DEVICE) -D $(ADFLAGS)
+ALL_ADFLAGS = -c$(AD_CONFIG) -p$(AD_PARTNO) -b$(AD_BAUDRT) -P$(AD_DEVICE) -D $(ADFLAGS)
 
 TARGET      = libarduino2
 SOURCE      = libarduino2.c main.c
