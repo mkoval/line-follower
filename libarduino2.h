@@ -7,7 +7,7 @@
 #include <avr/pgmspace.h>
 
 #if defined(DEBUG)
-#define ERROR(_func_, _msg_) printf_P(PSTR("err: " _func_ ": " _msg_ "\n") )
+#define ERROR(_func_, _msg_) printf_P(PSTR("err: " _func_ ": " _msg_ "\r\n") )
 #else
 #define ERROR(_func_, _msg_)
 #endif

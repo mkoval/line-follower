@@ -34,7 +34,7 @@ int main(void) {
     for (;;) {
         mot[MOTOR_LEFT]  = 0.0f;
         mot[MOTOR_RIGHT] = 0.0f;
-        sensor_update(&g_config_sen, sen);
+        sensor_update(&g_config_sen, &sen);
 
         switch (mode) {
         case MODE_MENU:
@@ -45,7 +45,7 @@ int main(void) {
             /* Save current the current configuration to EEPROM. */
             if (!strcmp(cmd, "save")) {
                 storage_set(&g_config_sen.table);
-                printf_P(PSTR("Configuration saved to EEPROM.\n"));
+                printf_P(PSTR("Configuration saved to EEPROM.\r\n"));
             }
             /* Clear all data stored in EEPROM. */
             else if (!strcmp(cmd, "reset")) {
@@ -55,7 +55,7 @@ int main(void) {
 
                     if (*cmd == 'y' || *cmd == 'Y') {
                         storage_clear();
-                        printf_P(PSTR("EEPROM cleared.\n"));
+                        printf_P(PSTR("EEPROM cleared.\r\n"));
                         break;
                     } else if (*cmd == 'n' || *cmd == 'N') {
                         break;
@@ -65,10 +65,10 @@ int main(void) {
             /* Calibrate the line following sensors. */
             else if (!strcmp(cmd, "line")) {
                 sensor_line(&g_config_sen);
-                printf_P(PSTR("Line calibration complete.\n"));
+                printf_P(PSTR("Line calibration complete.\r\n"));
             } else if (!strcmp(cmd, "floor")) {
                 sensor_floor(&g_config_sen);
-                printf_P(PSTR("Floor calibration complete.\n"));
+                printf_P(PSTR("Floor calibration complete.\r\n"));
             }
             /* Follow the line with a machine learning algorithm. */
             else if (!strcmp(cmd, "follow")) {
@@ -78,7 +78,7 @@ int main(void) {
             }
             /* Unrecognized command. */
             else if (*cmd) {
-                printf_P(PSTR("Unrecognized command.\n"));
+                printf_P(PSTR("Unrecognized command.\r\n"));
             }
             break;
 
