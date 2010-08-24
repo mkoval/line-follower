@@ -8,7 +8,7 @@
 #define EEPROM_ERROR (EEPROM_END + 2)
 
 uint16_t storage_sum(table_t const *table) {
-    uint8_t const *data = (uint8_t const *)table;
+    uint8_t const *data = (uint8_t const *)(table + 1);
     uint16_t sum = 0;
     int i;
 
@@ -88,7 +88,7 @@ bool storage_get(table_t *table) {
     /* Verify the table's checksum. */
     if (storage_sum(table) != table->sum) {
         ERROR("storage_get", "table failed checksum");
-        return true; /* TODO: Fix this error instead of squelching it. */
+        return false;
     } else {
         return true;
     }

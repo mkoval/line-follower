@@ -11,6 +11,7 @@ typedef struct {
     uint16_t sum;
 } table_t;
 
+uint16_t storage_sum(table_t const *);
 void storage_clear(void);
 uint16_t storage_find(uint16_t, table_t *);
 bool storage_get(table_t *);
