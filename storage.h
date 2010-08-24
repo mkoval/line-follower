@@ -14,6 +14,6 @@ typedef struct {
 void storage_clear(void);
 uint16_t storage_find(uint16_t, table_t *);
 bool storage_get(uint16_t, table_t *, uint16_t);
-bool storage_set(table_t const *);
+bool storage_set(table_t *);
 
 #endif
