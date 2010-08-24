@@ -8,11 +8,11 @@
 #define EEPROM_ERROR (EEPROM_END + 2)
 
 uint16_t storage_sum(table_t const *table) {
-    uint8_t const *data = (uint8_t const *)(table + sizeof(table_t));
+    uint8_t const *data = (uint8_t const *)table;
     uint16_t sum = 0;
     int i;
 
-    for (i = 0; i < table->len; ++i) {
+    for (i = 0; i < table->len - sizeof(table_t); ++i) {
         sum += data[i];
     }
     return sum;
@@ -34,7 +34,7 @@ uint16_t storage_find(uint16_t id, table_t *table) {
             return EEPROM_EOF;
         }
         /* Table is invalid; it extends past the end of available memory. */
-        else if (i + sizeof(table_t) + table->len >= EEPROM_END) {
+        else if (i + table->len >= EEPROM_END) {
             return EEPROM_ERROR;
         }
         /* Found a match (although the checksum may fail...). */
@@ -42,7 +42,7 @@ uint16_t storage_find(uint16_t id, table_t *table) {
             return i;
         }
         else {
-            i += sizeof(table_t) + table->len;
+            i += table->len;
         }
     }
     return EEPROM_EOF;
@@ -59,7 +59,7 @@ uint16_t storage_end(void) {
         if (table.len == 0 || i + sizeof(table_t) + table.len >= EEPROM_END) {
             break;
         } else {
-            i += sizeof(table_t) + table.len;
+            i += table.len;
         }
     }
     return i;
@@ -83,7 +83,7 @@ bool storage_get(table_t *table) {
     }
 
     /* Copy the table's data from EEPROM into RAM. */
-    eeprom_read_block(table, (void *)i, sizeof(table_t) + table->len);
+    eeprom_read_block(table, (void *)i, table->len);
 
     /* Verify the table's checksum. */
     if (storage_sum(table) != table->sum) {
@@ -108,13 +108,13 @@ bool storage_set(table_t *table) {
         return false;
     }
     /* There is not enough room to append the table to the end of the EEPROM. */
-    else if (i == EEPROM_EOF && end + sizeof(table_t) + table->len >= EEPROM_END) {
+    else if (i == EEPROM_EOF && end + table->len >= EEPROM_END) {
         ERROR("storage_set", "insufficient memory");
         return false;
     }
     /* Append the table to the end of the EEPROM. */
     else if (i == EEPROM_EOF) {
-        eeprom_write_block(table, (void *)end, table->len + sizeof(table_t));
+        eeprom_write_block(table, (void *)end, table->len);
         return true;
     }
     /* Table in EEPROM has a different structure than the one we're writing. */
@@ -125,7 +125,7 @@ bool storage_set(table_t *table) {
     /* Table header is the same, only the data is different. */
     else {
         table->sum = storage_sum(table);
-        eeprom_write_block(table, (void *)i, table->len + sizeof(table_t));
+        eeprom_write_block(table, (void *)i, table->len);
         return true;
     }
 }

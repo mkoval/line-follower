@@ -8,7 +8,7 @@
 )
 
 void sensor_init_config(sensor_config_t *config) {
-    config->table.len = sizeof(sensor_config_t) - sizeof(table_t);
+    config->table.len = sizeof(sensor_config_t);
     config->table.id  = TABLE_SENSOR;
     config->table.ver = SENSOR_VERSION;
 }
