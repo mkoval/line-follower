@@ -32,8 +32,8 @@ int main(void) {
     sensor_init(&g_config_sen);
 
     for (;;) {
-        mot[MOTOR_LEFT]  = 0.0f;
-        mot[MOTOR_RIGHT] = 0.0f;
+        mot.left  = 0.0f;
+        mot.right = 0.0f;
         sensor_update(&g_config_sen, &sen);
 
         switch (mode) {
@@ -96,5 +96,5 @@ int main(void) {
         }
     }
 
-    motor_update(mot);
+    motor_update(&mot);
 }

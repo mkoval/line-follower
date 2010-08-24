@@ -29,9 +29,9 @@ void motor_init(void) {
     digital_set(MOTOR_RIGHT_EN, 1);
 }
 
-void motor_update(motor_t const motor) {
-    float l = MOTOR_LEFT_SIGN * CONSTRAIN(motor[MOTOR_LEFT], -1.0f, +1.0f);
-    float r = MOTOR_RIGHT_SIGN * CONSTRAIN(motor[MOTOR_RIGHT], -1.0f, +1.0f);
+void motor_update(motor_t const *motor) {
+    float l = MOTOR_LEFT_SIGN * CONSTRAIN(motor->left, -1.0f, +1.0f);
+    float r = MOTOR_RIGHT_SIGN * CONSTRAIN(motor->right, -1.0f, +1.0f);
     bool l_sign = l < 0.0f;
     bool r_sign = r < 0.0f;
 

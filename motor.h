@@ -1,14 +1,12 @@
 #ifndef MOTOR_H_
 #define MOTOR_H_
 
-enum {
-    MOTOR_RIGHT = 0,
-    MOTOR_LEFT,
-    MOTOR_NUM
-};
-typedef float motor_t[MOTOR_NUM];
+typedef struct {
+    float right;
+    float left;
+} motor_t;
 
 void motor_init(void);
-void motor_update(motor_t const);
+void motor_update(motor_t const *);
 
 #endif
