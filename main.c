@@ -26,10 +26,11 @@ int main(void) {
     sensor_t sen;
     motor_t  mot;
     char cmd[16];
+    char ch;
 
     motor_init();
     serial_init();
-    timer_init(200);
+    timer_init(100);
     
     learn_init(&g_config_learn);
     sensor_init(&g_config_sen);
@@ -42,14 +43,23 @@ int main(void) {
         switch (mode) {
         case MODE_MENU:
             /* Prompt the user for a command. */
-            printf_P(PSTR(" >>> "));
+            printf_P(PSTR("\r\n >>> "));
             readline(cmd, cmd + sizeof(cmd));
 
             /* Save current the current configuration to EEPROM. */
             if (!strcmp(cmd, "save")) {
-                storage_set(&g_config_learn.table);
-                storage_set(&g_config_sen.table);
-                printf_P(PSTR("Configuration saved to EEPROM.\r\n"));
+                uint16_t size = 0;
+                bool saved = true;
+                saved = saved && storage_set(&g_config_learn.table);
+                saved = saved && storage_set(&g_config_sen.table);
+                size += g_config_learn.table.len;
+                size += g_config_sen.table.len;
+
+                if (saved) {
+                    printf_P(PSTR("Saved %d bytes to EEPROM.\r\n"), (int)size);
+                } else {
+                    printf_P(PSTR("Error saving %d bytes to EEPROM.\r\n"), (int)size);
+                }
             }
             /* Clear all data stored in EEPROM. */
             else if (!strcmp(cmd, "reset")) {
@@ -92,26 +102,31 @@ int main(void) {
         case MODE_TRAIN:
             /* Throttle samples used for learning to reduce memory usage. */
             if (timer_done()) {
+                putchar('#');
                 learn_train(&g_config_learn, &sen, &mot);
             }
 
-            if (serial_getc() == 'x' || serial_getc() == 'X') {
-                mode = MODE_MENU;
-                learn_train_end(&g_config_learn);
-                printf_P(PSTR("Training complete.\r\n"));
+            while ((ch = serial_getc()) != EOF) {
+                if (ch == 'x' || ch == 'X') {
+                    mode = MODE_MENU;
+                    learn_train_end(&g_config_learn);
+                    printf_P(PSTR("Training complete.\r\n"));
+                }
             }
             break;
 
         case MODE_FOLLOW:
             /* Throttle sampling to match the training rate. */
             if (timer_done()) {
+                putchar('#');
                 learn_greed(&g_config_learn, &sen, &mot);
             }
 
-            if (serial_getc() == 'x' || serial_getc() == 'X') {
-                mode = MODE_MENU;
-                learn_train_end(&g_config_learn);
-                printf_P(PSTR("Training complete.\r\n"));
+            while ((ch = serial_getc()) != EOF) {
+                if (ch == 'x' || ch == 'X') {
+                    mode = MODE_MENU;
+                    learn_train_end(&g_config_learn);
+                }
             }
             break;
         }
