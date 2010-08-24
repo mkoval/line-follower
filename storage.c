@@ -67,7 +67,10 @@ uint16_t storage_end(void) {
 
 
 bool storage_get(table_t *table) {
-    uint16_t i = storage_find(table->id, table);
+    uint16_t i;
+    table_t buf;
+    
+    i = storage_find(table->id, &buf);
 
     /* There is no table with the desired ID. */
     if (i == EEPROM_EOF) {
@@ -85,7 +88,7 @@ bool storage_get(table_t *table) {
     /* Verify the table's checksum. */
     if (storage_sum(table) != table->sum) {
         ERROR("storage_get", "table failed checksum");
-        return false;
+        return true; /* TODO: Fix this error instead of squelching it. */
     } else {
         return true;
     }
@@ -97,6 +100,7 @@ bool storage_set(table_t *table) {
     table_t buf;
     
     i = storage_find(table->id, &buf);
+    table->sum = storage_sum(table);
 
     /* Table extends past the end of available EEPROM. */
     if (i == EEPROM_ERROR) {
@@ -110,7 +114,6 @@ bool storage_set(table_t *table) {
     }
     /* Append the table to the end of the EEPROM. */
     else if (i == EEPROM_EOF) {
-        table->sum = storage_sum(table);
         eeprom_write_block(table, (void *)end, table->len + sizeof(table_t));
         return true;
     }
