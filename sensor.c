@@ -1,4 +1,5 @@
 #include "libarduino2.h"
+#include "config.h"
 #include "sensor.h"
 
 #define CONSTRAIN(_x_, _min_, _max_) (  \
@@ -6,43 +7,56 @@
     ((_x_) > (_max_)) ? (_max_) : (_x_) \
 )
 
-static uint16_t g_floor[SENSOR_NUM];
-static uint16_t g_line[SENSOR_NUM];
+void sensor_init_config(sensor_config_t *config) {
+    config->table.len = sizeof(sensor_config_t) - sizeof(table_t);
+    config->table.id  = TABLE_SENSOR;
+    config->table.ver = SENSOR_VERSION;
+}
 
-void sensor_init(void) {
+void sensor_init(sensor_config_t *config) {
     uint8_t i;
+    bool read;
     analog_init();
 
-    for (i = 0; i < SENSOR_NUM; ++i) {
-        g_floor[i] = 0;
-        g_line[i]  = 1024;
+    /* Read stored configuration values from EEPROM. */
+    sensor_init_config(config);
+    read = storage_get(&config->table);
+
+    /* Fall back on default values if the read fails. */
+    if (!read) {
+        /* Re-initialize since it may have been butchered by sensor_get(). */
+        sensor_init_config(config);
+        for (i = 0; i < SENSOR_NUM; ++i) {
+            config->floor[i] = 0;
+            config->line[i]  = 1024;
+        }
     }
 }
 
-void sensor_floor(void) {
+void sensor_floor(sensor_config_t *config) {
     uint8_t i;
     for (i = 0; i < SENSOR_NUM; ++i) {
-        g_floor[i] = analog_get(i);
+        config->floor[i] = analog_get(i);
     }
 }
 
-void sensor_line(void) {
+void sensor_line(sensor_config_t *config) {
     uint8_t i;
     for(i = 0; i < SENSOR_NUM; ++i) {
-        g_line[i] = analog_get(i);
+        config->line[i] = analog_get(i);
     }
 }
 
-void sensor_update(sensor_t sen) {
+void sensor_update(sensor_config_t const *config, sensor_t sen) {
     uint8_t i;
     for (i = 0; i < SENSOR_NUM; ++i) {
         float value = analog_get(i);
 
         /* Force the line to produce higher sensor readings than the floor. */
-        if (g_line[i] > g_floor[i]) {
-            sen[i] = (value - g_floor[i]) / g_line[i];
+        if (config->line[i] > config->floor[i]) {
+            sen[i] = (value - config->floor[i]) / config->line[i];
         } else {
-            sen[i] = 1.0f - (value - g_line[i]) / g_floor[i];
+            sen[i] = 1.0f - (value - config->line[i]) / config->floor[i];
         }
         sen[i] = CONSTRAIN(sen[i], 0.0f, 1.0f);
     }
