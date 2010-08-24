@@ -66,8 +66,8 @@ uint16_t storage_end(void) {
 }
 
 
-bool storage_get(uint16_t id, table_t *table, uint16_t capacity) {
-    uint16_t i = storage_find(id, table);
+bool storage_get(table_t *table) {
+    uint16_t i = storage_find(table->id, table);
 
     /* There is no table with the desired ID. */
     if (i == EEPROM_EOF) {
