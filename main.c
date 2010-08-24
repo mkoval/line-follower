@@ -83,11 +83,11 @@ int main(void) {
             break;
 
         case MODE_FOLLOW:
-            printf("%4d %4d %4d %4d\n",
-                (int)(sen[0] * 1000),
-                (int)(sen[1] * 1000),
-                (int)(sen[2] * 1000),
-                (int)(sen[3] * 1000)
+            printf("%4d %4d %4d %4d\r\n",
+                (int)(sen.value[0] * 1000),
+                (int)(sen.value[1] * 1000),
+                (int)(sen.value[2] * 1000),
+                (int)(sen.value[3] * 1000)
             );
             break;
 
