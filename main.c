@@ -2,6 +2,7 @@
 #include <string.h>
 #include <util/delay.h>
 #include "libarduino2.h"
+#include "learn.h"
 #include "motor.h"
 #include "sensor.h"
 #include "storage.h"
@@ -17,6 +18,7 @@ typedef struct {
     char value;
 } storage_test_t;
 
+static learn_config_t  g_config_learn;
 static sensor_config_t g_config_sen;
 
 int main(void) {
@@ -29,6 +31,7 @@ int main(void) {
     serial_init();
     timer_init(200);
     
+    learn_init(&g_config_learn);
     sensor_init(&g_config_sen);
 
     for (;;) {
@@ -44,6 +47,7 @@ int main(void) {
 
             /* Save current the current configuration to EEPROM. */
             if (!strcmp(cmd, "save")) {
+                storage_set(&g_config_learn.table);
                 storage_set(&g_config_sen.table);
                 printf_P(PSTR("Configuration saved to EEPROM.\r\n"));
             }
@@ -73,8 +77,11 @@ int main(void) {
             /* Follow the line with a machine learning algorithm. */
             else if (!strcmp(cmd, "follow")) {
                 mode = MODE_FOLLOW;
+                printf_P(PSTR("Press 'x' to return to the shell\r\n"));
             } else if (!strcmp(cmd, "train")) {
                 mode = MODE_TRAIN;
+                learn_train_start(&g_config_learn);
+                printf_P(PSTR("Press 'x' to return to the shell\r\n"));
             }
             /* Unrecognized command. */
             else if (*cmd) {
@@ -82,16 +89,30 @@ int main(void) {
             }
             break;
 
-        case MODE_FOLLOW:
-            printf("%4d %4d %4d %4d\r\n",
-                (int)(sen.value[0] * 1000),
-                (int)(sen.value[1] * 1000),
-                (int)(sen.value[2] * 1000),
-                (int)(sen.value[3] * 1000)
-            );
+        case MODE_TRAIN:
+            /* Throttle samples used for learning to reduce memory usage. */
+            if (timer_done()) {
+                learn_train(&g_config_learn, &sen, &mot);
+            }
+
+            if (serial_getc() == 'x' || serial_getc() == 'X') {
+                mode = MODE_MENU;
+                learn_train_end(&g_config_learn);
+                printf_P(PSTR("Training complete.\r\n"));
+            }
             break;
 
-        case MODE_TRAIN:
+        case MODE_FOLLOW:
+            /* Throttle sampling to match the training rate. */
+            if (timer_done()) {
+                learn_greed(&g_config_learn, &sen, &mot);
+            }
+
+            if (serial_getc() == 'x' || serial_getc() == 'X') {
+                mode = MODE_MENU;
+                learn_train_end(&g_config_learn);
+                printf_P(PSTR("Training complete.\r\n"));
+            }
             break;
         }
     }
