@@ -272,20 +272,54 @@ ISR(TIMER0_OVF_vect) {
  * Miscellaneous
  */
 int readline(char *begin, char *end) {
-    char *cursor = begin;
+    char   *cursor  = begin;
+    uint8_t escape  = 0;
 
     for (;;) {
         char ch = getchar();
 
+
+        /* Parse ANSI escape sequences, which have the following syntax:
+         *   CLI ##;##; ... LTR
+         * where
+         *   CLI is the 27 followed by one in the range 64-95.
+         *   ## is an arbitrarily long string of digits
+         *   LTR is in the range 64-126
+         */
+        if (ch == 27) {
+            escape = 1;
+        }
+        else if (escape == 1 && 64 <= ch && ch <= 95) {
+            escape = 2;
+        }
+        else if (escape == 2 && (('0' <= ch && ch <= '9') || (ch == ';'))) {
+            escape = 3;
+        }
+        else if ((escape == 2 || escape == 3) && 64 <= ch && ch <= 126) {
+            escape  = 0;
+        }
+        else if (escape != 0) {
+            ERROR("readline", "invalid ANSI escape sequence");
+            escape = 0;
+        }
         /* Printable characters. */
-        if (32 <= ch && ch <= 126 && cursor != end) {
+        else if (32 <= ch && ch <= 126 && cursor != end) {
             *cursor = ch;
             ++cursor;
             putchar(ch);
         }
         /* Backspace deletes the previous character in the buffer. */
         else if (ch == 127 && cursor != begin) {
-            /* TODO: Figure out how to support this in miniterm. */
+            putchar(0x1B);
+            putchar(0x5B);
+            putchar('1');
+            putchar('D');
+            putchar(' ');
+            putchar(0x1B);
+            putchar(0x5B);
+            putchar('1');
+            putchar('D');
+            --cursor;
         }
         /* We're done when we receive a newline. */
         else if (ch == 13) {
