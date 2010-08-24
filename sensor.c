@@ -8,9 +8,6 @@
 )
 
 void sensor_init_config(sensor_config_t *config) {
-    config->table.len = sizeof(sensor_config_t);
-    config->table.id  = TABLE_SENSOR;
-    config->table.ver = SENSOR_VERSION;
 }
 
 void sensor_init(sensor_config_t *config) {
@@ -19,13 +16,15 @@ void sensor_init(sensor_config_t *config) {
     analog_init();
 
     /* Read stored configuration values from EEPROM. */
-    sensor_init_config(config);
+    config->table.len = sizeof(sensor_config_t);
+    config->table.id  = TABLE_SENSOR;
+    config->table.ver = SENSOR_VERSION;
     read = storage_get(&config->table);
 
     /* Fall back on default values if the read fails. */
     if (!read) {
-        /* Re-initialize since it may have been butchered by sensor_get(). */
-        sensor_init_config(config);
+        ERROR("sensor_init", "no configuration data in EEPROM");
+
         for (i = 0; i < SENSOR_NUM; ++i) {
             config->floor[i] = 0;
             config->line[i]  = 1024;
