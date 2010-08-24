@@ -4,12 +4,20 @@
 #include "libarduino2.h"
 #include "motor.h"
 #include "sensor.h"
+#include "storage.h"
 
 typedef enum {
     MODE_MENU,
     MODE_FOLLOW,
     MODE_TRAIN
 } mode_t;
+
+typedef struct {
+    table_t store;
+    char value;
+} storage_test_t;
+
+static sensor_config_t g_config_sen;
 
 int main(void) {
     mode_t   mode = MODE_MENU;
@@ -18,13 +26,15 @@ int main(void) {
     char cmd[16];
 
     motor_init();
-    sensor_init();
     serial_init();
+    timer_init(200);
+    
+    sensor_init(&g_config_sen);
 
     for (;;) {
         mot[MOTOR_LEFT]  = 0.0f;
         mot[MOTOR_RIGHT] = 0.0f;
-        sensor_update(sen);
+        sensor_update(&g_config_sen, sen);
 
         switch (mode) {
         case MODE_MENU:
@@ -32,12 +42,32 @@ int main(void) {
             printf_P(PSTR(" >>> "));
             readline(cmd, cmd + sizeof(cmd));
 
+            /* Save current the current configuration to EEPROM. */
+            if (!strcmp(cmd, "save")) {
+                storage_set(&g_config_sen.table);
+                printf_P(PSTR("Configuration saved to EEPROM.\n"));
+            }
+            /* Clear all data stored in EEPROM. */
+            else if (!strcmp(cmd, "reset")) {
+                for (;;) {
+                    printf_P(PSTR("Are you sure? <Y/N> "));
+                    readline(cmd, cmd + 1);
+
+                    if (*cmd == 'y' || *cmd == 'Y') {
+                        storage_clear();
+                        printf_P(PSTR("EEPROM cleared.\n"));
+                        break;
+                    } else if (*cmd == 'n' || *cmd == 'N') {
+                        break;
+                    }
+                }
+            }
             /* Calibrate the line following sensors. */
-            if (!strcmp(cmd, "line")) {
-                sensor_line();
+            else if (!strcmp(cmd, "line")) {
+                sensor_line(&g_config_sen);
                 printf_P(PSTR("Line calibration complete.\n"));
             } else if (!strcmp(cmd, "floor")) {
-                sensor_floor();
+                sensor_floor(&g_config_sen);
                 printf_P(PSTR("Floor calibration complete.\n"));
             }
             /* Follow the line with a machine learning algorithm. */
@@ -47,12 +77,18 @@ int main(void) {
                 mode = MODE_TRAIN;
             }
             /* Unrecognized command. */
-            else {
+            else if (*cmd) {
                 printf_P(PSTR("Unrecognized command.\n"));
             }
             break;
 
         case MODE_FOLLOW:
+            printf("%4d %4d %4d %4d\n",
+                (int)(sen[0] * 1000),
+                (int)(sen[1] * 1000),
+                (int)(sen[2] * 1000),
+                (int)(sen[3] * 1000)
+            );
             break;
 
         case MODE_TRAIN:
