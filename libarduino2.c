@@ -281,16 +281,19 @@ int readline(char *begin, char *end) {
         if (32 <= ch && ch <= 126 && cursor != end) {
             *cursor = ch;
             ++cursor;
+            putchar(ch);
         }
         /* Backspace deletes the previous character in the buffer. */
         else if (ch == 127 && cursor != begin) {
             /* TODO: Figure out how to support this in miniterm. */
         }
         /* We're done when we receive a newline. */
-        else if (ch == '\n') {
+        else if (ch == 13) {
             *cursor = '\0';
             break;
         }
     }
+    putchar('\r');
+    putchar('\n');
     return cursor - begin;
 }
