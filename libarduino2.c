@@ -207,7 +207,7 @@ int serial_getc(void) {
     char ch;
 
     /* Only read from the buffer if new data is available. */
-    if (g_uart_read == g_uart_write) {
+    if (g_uart_read != g_uart_write) {
         ch = g_uart_buf[g_uart_read];
         g_uart_read = (g_uart_read + 1) % UART_SIZE;
         return ch;
