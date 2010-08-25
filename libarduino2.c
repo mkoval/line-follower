@@ -310,11 +310,16 @@ int readline(char *begin, char *end) {
         }
         /* Backspace deletes the previous character in the buffer. */
         else if (ch == 127 && cursor != begin) {
+            /* Move the cursor backwards. */
             putchar(0x1B);
             putchar(0x5B);
             putchar('1');
             putchar('D');
+
+            /* Overwrite the current character with a space. */
             putchar(' ');
+
+            /* Move the cursor backwards. */
             putchar(0x1B);
             putchar(0x5B);
             putchar('1');
