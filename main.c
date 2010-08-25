@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <util/delay.h>
 #include "libarduino2.h"
@@ -30,14 +31,13 @@ int main(void) {
 
     motor_init();
     serial_init();
-    timer_init(100);
-    
+    timer_init(LEARN_TICK);
     learn_init(&g_config_learn);
     sensor_init(&g_config_sen);
 
+    srand(analog_get(0));
+
     for (;;) {
-        mot.left  = 0.0f;
-        mot.right = 0.0f;
         sensor_update(&g_config_sen, &sen);
 
         switch (mode) {
@@ -102,12 +102,13 @@ int main(void) {
         case MODE_TRAIN:
             /* Throttle samples used for learning to reduce memory usage. */
             if (timer_done()) {
-                putchar('#');
                 learn_train(&g_config_learn, &sen, &mot);
             }
 
             while ((ch = serial_getc()) != EOF) {
                 if (ch == 'x' || ch == 'X') {
+                    mot.left  = 0.0f;
+                    mot.right = 0.0f;
                     mode = MODE_MENU;
                     learn_train_end(&g_config_learn);
                     printf_P(PSTR("Training complete.\r\n"));
@@ -118,19 +119,20 @@ int main(void) {
         case MODE_FOLLOW:
             /* Throttle sampling to match the training rate. */
             if (timer_done()) {
-                putchar('#');
                 learn_greed(&g_config_learn, &sen, &mot);
             }
 
             while ((ch = serial_getc()) != EOF) {
                 if (ch == 'x' || ch == 'X') {
+                    mot.left  = 0.0f;
+                    mot.right = 0.0f;
                     mode = MODE_MENU;
                     learn_train_end(&g_config_learn);
                 }
             }
             break;
         }
-    }
 
-    motor_update(&mot);
+        motor_update(&mot);
+    }
 }
