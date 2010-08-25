@@ -92,6 +92,16 @@ int main(void) {
                 mode = MODE_TRAIN;
                 learn_train_start(&g_config_learn);
                 printf_P(PSTR("Press 'x' to return to the shell\r\n"));
+            } else if (!strcmp(cmd, "brain")) {
+                uint8_t i, j;
+
+                for (i = 0; i < LEARN_STATES; ++i) {
+                    printf("  ");
+                    for (j = 0; j < LEARN_ACTIONS; ++j) {
+                        printf("%4d  ", (int)(g_config_learn.q[i][j]));
+                    }
+                    printf("\r\n");
+                }
             }
             /* Unrecognized command. */
             else if (*cmd) {
