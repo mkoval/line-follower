@@ -4,7 +4,7 @@
 #include "learn.h"
 
 static float g_reward[LEARN_STATES] = {
-    0.5, 1.0, 1.5, 2.0, 1.5, 1.0, 0.5
+    1.0, 5.0, 5.0, 1.0
 };
 
 void learn_state(sensor_t const *sen, state_t *state) {
@@ -12,12 +12,9 @@ void learn_state(sensor_t const *sen, state_t *state) {
     uint8_t i;
     
     weight[0] = sen->value[SENSOR_FARRIGHT];
-    weight[1] = (sen->value[SENSOR_MIDRIGHT] + sen->value[SENSOR_FARRIGHT]) * LEARN_MID;
-    weight[2] = sen->value[SENSOR_MIDRIGHT];
-    weight[3] = (sen->value[SENSOR_MIDLEFT] + sen->value[SENSOR_MIDRIGHT]) * LEARN_MID;
-    weight[4] = sen->value[SENSOR_MIDLEFT];
-    weight[5] = (sen->value[SENSOR_MIDLEFT] + sen->value[SENSOR_FARLEFT]) * LEARN_MID;
-    weight[6] = sen->value[SENSOR_FARLEFT];
+    weight[1] = sen->value[SENSOR_MIDRIGHT];
+    weight[2] = sen->value[SENSOR_MIDLEFT];
+    weight[3] = sen->value[SENSOR_FARLEFT];
 
     /* Select the state that is most probable. */
     state->id = 0;
@@ -31,8 +28,7 @@ void learn_state(sensor_t const *sen, state_t *state) {
 void learn_motor(action_t const *act, motor_t *motor) {
     int16_t normal = LEARN_ACTIONS / 2;
     int16_t middle = (LEARN_ACTIONS + 1) / 2;
-    int16_t delta  = (int16_t)act->id - middle;
-
+    int16_t delta  = act->id - middle;
 
     /* Turn right by slowing the left motor. */
     if (delta < 0) {
@@ -43,9 +39,11 @@ void learn_motor(action_t const *act, motor_t *motor) {
     else if (delta > 0) {
         motor->left  = 1.0f;
         motor->right = +delta / (float)normal;
-    } else {
-        motor->left  = 1.0f;
-        motor->right = 1.0f;
+    }
+    /* Drive perfectly straight. */
+    else {
+        motor->left  = 0.0f;
+        motor->right = 0.0f;
     }
 }
 
@@ -123,6 +121,8 @@ void learn_greed(learn_config_t *config, sensor_t const *sen, motor_t *mot) {
     uint16_t i;
 
     learn_state(sen, &state);
+
+    printf("state = %2d\r\n", (int)state.id);
 
     /* Greedily select the best action using Q. */
     action.id = 0;

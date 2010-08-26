@@ -5,12 +5,13 @@
 #include "sensor.h"
 #include "storage.h"
 
-#define LEARN_STATES  7
+#define LEARN_STATES  4
 #define LEARN_ACTIONS 5
 #define LEARN_HISTORY 100
 
 #define LEARN_START   0.00f
 #define LEARN_MID     0.75f;
+#define LEARN_TICK    333
 
 #define LEARN_VERSION 1
 
