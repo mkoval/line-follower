@@ -83,6 +83,13 @@ int main(void) {
             } else if (!strcmp(cmd, "floor")) {
                 sensor_floor(&g_config_sen);
                 printf_P(PSTR("Floor calibration complete.\r\n"));
+            } else if (!strcmp(cmd, "debug")) {
+                uint8_t i;
+
+                for (i = 0; i < SENSOR_NUM; ++i) {
+                    printf_P(PSTR("0.%02d "), (int)(sen.value[i] * 100));
+                }
+                printf_P(PSTR("\r\n"));
             }
             /* Follow the line with a machine learning algorithm. */
             else if (!strcmp(cmd, "follow")) {
@@ -98,7 +105,7 @@ int main(void) {
                 for (i = 0; i < LEARN_STATES; ++i) {
                     printf("  ");
                     for (j = 0; j < LEARN_ACTIONS; ++j) {
-                        printf("%4d  ", (int)(g_config_learn.q[i][j]));
+                        printf_P(PSTR("%4d  "), (int)(g_config_learn.q[i][j]));
                     }
                     printf("\r\n");
                 }
