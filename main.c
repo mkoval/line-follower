@@ -42,6 +42,9 @@ int main(void) {
 
         switch (mode) {
         case MODE_MENU:
+            mot.left  = 0.0f;
+            mot.right = 0.0f;
+
             /* Prompt the user for a command. */
             printf_P(PSTR("\r\n >>> "));
             readline(cmd, cmd + sizeof(cmd));
@@ -124,8 +127,6 @@ int main(void) {
 
             while ((ch = serial_getc()) != EOF) {
                 if (ch == 'x' || ch == 'X') {
-                    mot.left  = 0.0f;
-                    mot.right = 0.0f;
                     mode = MODE_MENU;
                     learn_train_end(&g_config_learn);
                     printf_P(PSTR("Training complete.\r\n"));
