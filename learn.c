@@ -122,8 +122,6 @@ void learn_greed(learn_config_t *config, sensor_t const *sen, motor_t *mot) {
 
     learn_state(sen, &state);
 
-    printf("state = %2d\r\n", (int)state.id);
-
     /* Greedily select the best action using Q. */
     action.id = 0;
     for (i = 1; i < LEARN_ACTIONS; ++i) {
