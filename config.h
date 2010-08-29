@@ -6,4 +6,6 @@ enum {
     TABLE_SENSOR
 };
 
+#define SENSOR_LINEMIN 0.20f
+
 #endif

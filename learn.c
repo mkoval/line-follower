@@ -3,47 +3,57 @@
 #include "libarduino2.h"
 #include "learn.h"
 
+#define ABS(_x_) (((_x_) < 0.0f) ? -(_x_) : (_x_))
+
 static float g_reward[LEARN_STATES] = {
-    1.0, 5.0, 5.0, 1.0
+    10.0f, /* between middle sensors */
+    1.0,   /* far-right sensor */
+    5.0,   /* mid-right sensor */
+    5.0,   /* mid-left sensor */
+    1.0    /* far-left sensor */
 };
 
 void learn_state(sensor_t const *sen, state_t *state) {
-    float weight[LEARN_STATES];
-    uint8_t i;
-    
-    weight[0] = sen->value[SENSOR_FARRIGHT];
-    weight[1] = sen->value[SENSOR_MIDRIGHT];
-    weight[2] = sen->value[SENSOR_MIDLEFT];
-    weight[3] = sen->value[SENSOR_FARLEFT];
+    uint8_t i, max;
 
-    /* Select the state that is most probable. */
-    state->id = 0;
-    for (i = 1; i < LEARN_STATES; ++i) {
-        if (weight[i] > weight[state->id]) {
-            state->id = i;
+    /* Identify the sensor that is most likely over the line. */
+    max = 0;
+    for (i = 1; i < SENSOR_NUM; ++i) {
+        if (sen->value[i] > sen->value[max]) {
+            max = i;
         }
+    }
+
+    /* Assume the line is dead-center between the two middle sensors if it is
+     * detected by none of them.
+     */
+    if (sen->value[max] < SENSOR_LINEMIN) {
+        state->id = 0;
+    /* Line is firmly detected by one of the sensors. */
+    } else {
+        state->id = max + 1;
     }
 }
 
 void learn_motor(action_t const *act, motor_t *motor) {
-    int16_t normal = LEARN_ACTIONS / 2;
-    int16_t middle = (LEARN_ACTIONS + 1) / 2;
-    int16_t delta  = act->id - middle;
+    int8_t middle = LEARN_ACTIONS / 2;
+    int8_t delta  = act->id - middle;
+    float  speed  = 1.0f - (float)ABS(delta) / middle;
 
-    /* Turn right by slowing the left motor. */
-    if (delta < 0) {
-        motor->left  = -delta / (float)normal;
+    /* Turn Right */
+    if (delta < 0.0f) {
+        motor->left  = 1.0f;
+        motor->right = speed;
+    }
+    /* Turn Left */
+    else if (delta > 0.0f) {
+        motor->left  = speed;
         motor->right = 1.0f;
     }
-    /* Turn left by slowing the right motor. */
-    else if (delta > 0) {
-        motor->left  = 1.0f;
-        motor->right = +delta / (float)normal;
-    }
-    /* Drive perfectly straight. */
+    /* Straight */
     else {
-        motor->left  = 0.0f;
-        motor->right = 0.0f;
+        motor->left  = 1.0f;
+        motor->right = 1.0f;
     }
 }
 

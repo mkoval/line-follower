@@ -44,10 +44,13 @@ int main(void) {
         case MODE_MENU:
             mot.left  = 0.0f;
             mot.right = 0.0f;
+            motor_update(&mot);
 
             /* Prompt the user for a command. */
-            printf_P(PSTR("\r\n >>> "));
+            printf_P(PSTR("\r\n>>> "));
             readline(cmd, cmd + sizeof(cmd));
+
+            sensor_update(&g_config_sen, &sen);
 
             /* Save current the current configuration to EEPROM. */
             if (!strcmp(cmd, "save")) {
@@ -86,11 +89,13 @@ int main(void) {
             } else if (!strcmp(cmd, "floor")) {
                 sensor_floor(&g_config_sen);
                 printf_P(PSTR("Floor calibration complete.\r\n"));
-            } else if (!strcmp(cmd, "debug")) {
+            }
+            /* Debugging printf()'s. */
+            else if (!strcmp(cmd, "debug")) {
                 uint8_t i;
 
                 for (i = 0; i < SENSOR_NUM; ++i) {
-                    printf_P(PSTR("0.%02d "), (int)(sen.value[i] * 100));
+                    printf_P(PSTR("%2d "), (int)(sen.value[i] * 100));
                 }
                 printf_P(PSTR("\r\n"));
             }
@@ -124,6 +129,7 @@ int main(void) {
             if (timer_done()) {
                 learn_train(&g_config_learn, &sen, &mot);
             }
+            motor_update(&mot);
 
             while ((ch = serial_getc()) != EOF) {
                 if (ch == 'x' || ch == 'X') {
@@ -139,6 +145,7 @@ int main(void) {
             if (timer_done()) {
                 learn_greed(&g_config_learn, &sen, &mot);
             }
+            motor_update(&mot);
 
             while ((ch = serial_getc()) != EOF) {
                 if (ch == 'x' || ch == 'X') {
@@ -151,6 +158,5 @@ int main(void) {
             break;
         }
 
-        motor_update(&mot);
     }
 }

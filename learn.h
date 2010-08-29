@@ -5,7 +5,7 @@
 #include "sensor.h"
 #include "storage.h"
 
-#define LEARN_STATES  4
+#define LEARN_STATES  5
 #define LEARN_ACTIONS 5
 #define LEARN_HISTORY 100
 
